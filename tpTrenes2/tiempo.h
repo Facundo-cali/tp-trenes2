@@ -1,18 +1,17 @@
-//#ifndef TIEMPO_H
-//#define TIEMPO_H
+#ifndef TIEMPO_H
+#define TIEMPO_H
 
 
-//class tiempo
-//{
-//private:
-//    int seg, tiempo_inicial;
-//public:
-//    tiempo();
-//    tiempo(int segundos);
-//    void decrementar();
-//    int get_seg();
-//    void reiniciar();
-//};
+class tiempo
+{
+private:
+    int seg, tiempo_inicial;
+public:
+    tiempo();
+    tiempo(int segundos);
+    void decrementar();
+    int get_seg();
+    void reiniciar();
+};
 
-//#endif // TIEMPO_H
-
+#endif // TIEMPO_H

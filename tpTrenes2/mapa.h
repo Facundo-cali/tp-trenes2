@@ -13,10 +13,10 @@ private:
     int filas;
     int columnas;
     QPushButton*** botones;
+    QGridLayout* mapaLayout;
     vector<estacion*> estaciones;
     vector<ruta*> rutasValidas;
     vector<pair<int, int>> rutaEnConstruccion;// Vector para almacenar rutas en construccion.
-
 public:
     Mapa();
     Mapa(int filas, int columnas);
@@ -33,6 +33,10 @@ public:
     bool esAdyacente(int fila1, int columna1, int fila2, int columna2);
     void botonEstacionObjetivoClickeado(int fila, int columna);
     estacion *encontrarEstacionPorPosicion(int fila, int columna);
+
+
+signals:
+    void botonEstacionObjetivoClickeadoSignal();
 };
 
 #endif // MAPA_H

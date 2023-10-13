@@ -22,7 +22,8 @@ Mapa::Mapa(int filas, int columnas) : filas(filas), columnas(columnas) {
 
 void Mapa::crearMatrizDeBotones(int filas, int columnas) {
     botones = new QPushButton**[filas];
-    QGridLayout* mapaLayout = new QGridLayout; // Crea un nuevo layout
+    mapaLayout = new QGridLayout; // Crea un nuevo layout
+
 
     for (int i = 0; i < filas; i++) {
         botones[i] = new QPushButton*[columnas];
@@ -39,6 +40,7 @@ void Mapa::crearMatrizDeBotones(int filas, int columnas) {
 
 void Mapa::botonClickeado(int fila, int columna)
 {
+
     if (!conectandoEstaciones) {
             // Verificar si el botón clickeado representa una estación
             bool esEstacionObjetivo = false;
@@ -66,6 +68,8 @@ void Mapa::botonClickeado(int fila, int columna)
             int columnaUltimoPunto = ultimoPunto.second;//se usa para verificar si el usuario esta creando bien la ruta y no esta dando saltos
 
             if (esAdyacente(filaUltimoPunto, columnaUltimoPunto, fila, columna)) {
+                QPushButton* botonClickeado = botones[fila][columna];
+                botonClickeado->setText(" --- ");
                 // Agregar el clic a la ruta en construcción
                 rutaEnConstruccion.push_back(make_pair(fila, columna));
 
@@ -86,15 +90,25 @@ void Mapa::botonClickeado(int fila, int columna)
                     }
                 }
             } else {
+                //si el usuario se confunde y apreta mal, la ruta se borra y puede seguir jugando.El tiempo no se reinicia
                 qDebug() << "Error: Debes seleccionar un botón adyacente al último botón en la ruta.";
                 QMessageBox::critical(this, "Error", "Debes seguir una ruta adyacente. Creación de ruta cancelada.");
+                for (int i = 0; i < rutaEnConstruccion.size(); i++) {
+                    int fila = rutaEnConstruccion[i].first;
+                    int columna = rutaEnConstruccion[i].second;
+                    if(fila == inicioFila && columna == inicioColumna){
+                        QPushButton* botonClickeadoInicio = botones[inicioFila][inicioColumna];
+                        botonClickeadoInicio->setText(encontrarEstacionPorPosicion(inicioFila,inicioColumna)->getTipo());
+                    }else{
+                        botones[fila][columna]->setText(" . ");
+                    }
+                }
                 conectandoEstaciones = false;
                 rutaEnConstruccion.clear();
                 return;
             }
         }
-    QPushButton* botonClickeado = botones[fila][columna];
-    botonClickeado->setText(" - ");
+
 }
 void Mapa::botonEstacionObjetivoClickeado(int fila, int columna)
 {
@@ -155,6 +169,7 @@ void Mapa::botonEstacionObjetivoClickeado(int fila, int columna)
         qDebug() << "Error: La ruta no es válida.";
     }
     rutaEnConstruccion.clear(); // Limpia la ruta en construcción para una nueva creación
+    emit botonEstacionObjetivoClickeadoSignal();
 }
 
 estacion* Mapa::encontrarEstacionPorPosicion(int fila, int columna)
@@ -225,8 +240,8 @@ bool Mapa::hayEstacionEnPosicion(int fila, int columna) {
 //Verifica si el usuario crea las rutas de manera correcta.
 bool Mapa::esAdyacente(int fila1, int columna1, int fila2, int columna2)
 {
-    int distanciaFila = std::abs(fila1 - fila2);
-    int distanciaColumna = std::abs(columna1 - columna2);
+    int distanciaFila = abs(fila1 - fila2);
+    int distanciaColumna = abs(columna1 - columna2);
     return (distanciaFila == 1 && distanciaColumna == 0) || (distanciaFila == 0 && distanciaColumna == 1);
 }
 

@@ -18,6 +18,7 @@ SOURCES += \
     multi.cpp \
     normal.cpp \
     ruta.cpp \
+    tiempo.cpp \
     vertical.cpp
 
 HEADERS += \
@@ -29,6 +30,7 @@ HEADERS += \
     multi.h \
     normal.h \
     ruta.h \
+    tiempo.h \
     vertical.h
 
 FORMS += \

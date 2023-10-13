@@ -2,16 +2,22 @@
 <ui version="4.0">
  <class>MainWindow</class>
  <widget class="QMainWindow" name="MainWindow">
+  <property name="enabled">
+   <bool>true</bool>
+  </property>
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>785</width>
-    <height>506</height>
+    <width>1059</width>
+    <height>593</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>MainWindow</string>
+  </property>
+  <property name="layoutDirection">
+   <enum>Qt::LeftToRight</enum>
   </property>
   <property name="autoFillBackground">
    <bool>false</bool>
@@ -23,16 +29,53 @@
      <height>463</height>
     </size>
    </property>
+   <widget class="QLCDNumber" name="lcdNumber">
+    <property name="geometry">
+     <rect>
+      <x>640</x>
+      <y>10</y>
+      <width>401</width>
+      <height>61</height>
+     </rect>
+    </property>
+   </widget>
    <widget class="QWidget" name="gridLayoutWidget">
     <property name="geometry">
      <rect>
-      <x>0</x>
-      <y>40</y>
-      <width>791</width>
-      <height>321</height>
+      <x>10</x>
+      <y>100</y>
+      <width>1031</width>
+      <height>481</height>
      </rect>
     </property>
-    <layout class="QGridLayout" name="nombreDeTuQGridLayout"/>
+    <layout class="QGridLayout" name="mapagrid">
+     <property name="sizeConstraint">
+      <enum>QLayout::SetDefaultConstraint</enum>
+     </property>
+    </layout>
+   </widget>
+   <widget class="QLabel" name="label_2">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>10</y>
+      <width>611</width>
+      <height>81</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Yu Gothic UI Semibold</family>
+      <pointsize>11</pointsize>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="text">
+     <string>Ahora podes comenzar a crear tu ruta. Para hacerlo, selecciona una estación y pulsa los botones correspondientes para conectar las estaciones. Si lo hiciste correctamente, el temporizador se reiniciará y aparecerán más estaciones.Recuerda que las rutas siempre deben comenzar desde una estacion</string>
+    </property>
+    <property name="wordWrap">
+     <bool>true</bool>
+    </property>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
@@ -40,7 +83,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>785</width>
+     <width>1059</width>
      <height>21</height>
     </rect>
    </property>
