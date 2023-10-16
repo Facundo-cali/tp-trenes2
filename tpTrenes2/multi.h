@@ -5,6 +5,8 @@
 #include "estacion.h"
 class multi : public estacion
 {
+private:
+
 public:
     multi();
     multi(int fila, int columna);

@@ -16,7 +16,8 @@ private:
     QGridLayout* mapaLayout;
     vector<estacion*> estaciones;
     vector<ruta*> rutasValidas;
-    vector<pair<int, int>> rutaEnConstruccion;// Vector para almacenar rutas en construccion.
+    ruta* rutaEnConstruccion;//rutas en construccion.
+
 public:
     Mapa();
     Mapa(int filas, int columnas);
@@ -27,13 +28,15 @@ public:
 
 
     //gestion de creacion de rutas
+    int ultimoPuntoFila = -1;    // Inicialmente, no hay ningún último punto oprimido
+    int ultimoPuntoColumna = -1;
     int inicioFila;
     int inicioColumna;
     bool conectandoEstaciones;
     bool esAdyacente(int fila1, int columna1, int fila2, int columna2);
     void botonEstacionObjetivoClickeado(int fila, int columna);
     estacion *encontrarEstacionPorPosicion(int fila, int columna);
-
+    void cruceDeCaminos(int fila, int columna);
 
 signals:
     void botonEstacionObjetivoClickeadoSignal();

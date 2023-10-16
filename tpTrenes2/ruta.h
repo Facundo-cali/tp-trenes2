@@ -10,14 +10,18 @@ class ruta{
     private:
         estacion* estacionInicio; // Estación de inicio de la ruta
         estacion* estacionFinal;  // Estación de destino de la ruta
-        vector<pair<int, int>> camino; // Lista de coordenadas que forman el camino
+
     public:
         ruta();
         ruta(estacion* estacionInicio,estacion* estacionFinal,vector<pair<int, int>>& camino);
 
         // Métodos para gestionar el camino de la ruta
-        void agregarCoordenada(int fila, int columna);
-        vector<pair<int, int>>& obtenerCamino() ;
+
+        vector<pair<int, int>> camino; // Lista de coordenadas que forman el camino
+        estacion *getEstacionFinal();
+        void setEstacionFinal(estacion *newEstacionFinal);
+        estacion *getEstacionInicio();
+        void setEstacionInicio(estacion *newEstacionInicio);
 };
 
 #endif // RUTA_H

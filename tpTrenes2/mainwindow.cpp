@@ -6,18 +6,17 @@
 #include <QMessageBox>
 
 
-
-
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
+
     ui->setupUi(this);
-    juego miJuego;
-    this->timer=new QTimer(this);
-    this->cronometro=new tiempo(30);
+    this->timer = new QTimer(this);
+    miJuego.configurarCrono(30);
     connect(this->timer, &QTimer::timeout, this, &MainWindow::ontimer);
 
+    juego miJuego;
 
     // Crear una instancia de juego y configurar el mapa con las filas y columnas especificadas
     miJuego.configurarMapa(15, 15);
@@ -26,10 +25,8 @@ MainWindow::MainWindow(QWidget *parent)
     ui->mapagrid->addWidget(miJuego.mapa);
     connect(miJuego.mapa, &Mapa::botonEstacionObjetivoClickeadoSignal, this, &MainWindow::verificarBotonEstacionObjetivoClickeado);
 
-
     refresh();
     this->timer->start(1000);
-
 }
 
 MainWindow::~MainWindow()
@@ -39,31 +36,23 @@ MainWindow::~MainWindow()
 
 void MainWindow::refresh()
 {
-    this->ui->lcdNumber->display(this->cronometro->get_seg());
+    this->ui->lcdNumber->display(miJuego.cronometro->get_seg());
 }
 
-bool MainWindow::terminado()
-{
-    if(this->cronometro->get_seg()==0){
-        return true;
-    }
-    else{
-        return false;
-    }
-}
 
 void MainWindow::ontimer()
 {
-    this->cronometro->decrementar();
-    refresh();
-    if(terminado()){
-        this->timer->stop();
-        QMessageBox::critical(this,"Perdiste","Se termino el tiempo.");
+    miJuego.cronometro->decrementar();
+    if (miJuego.cronometroLlegoACero()) {
+        // El tiempo se ha agotado, muestra un mensaje y se cierra
+        QMessageBox::critical(this, "Game Over", "¡Tiempo agotado!");
+        QCoreApplication::quit();
     }
+    refresh();
 }
 
 void MainWindow::verificarBotonEstacionObjetivoClickeado() {
-    // Aquí puedes realizar la verificación o ejecutar acciones adicionales
-    this->cronometro->reiniciar();
+    // Realiza la verificación y acciones correspondientes
+    miJuego.cronometro->reiniciar();
 }
 

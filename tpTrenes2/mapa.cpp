@@ -4,6 +4,7 @@
 #include "horizontal.h"
 #include "multi.h"
 #include "normal.h"
+#include "qapplication.h"
 #include "vertical.h"
 #include <QMessageBox>
 #include <vector>
@@ -24,7 +25,6 @@ void Mapa::crearMatrizDeBotones(int filas, int columnas) {
     botones = new QPushButton**[filas];
     mapaLayout = new QGridLayout; // Crea un nuevo layout
 
-
     for (int i = 0; i < filas; i++) {
         botones[i] = new QPushButton*[columnas];
         for (int j = 0; j < columnas; j++) {
@@ -40,74 +40,65 @@ void Mapa::crearMatrizDeBotones(int filas, int columnas) {
 
 void Mapa::botonClickeado(int fila, int columna)
 {
-
     if (!conectandoEstaciones) {
-            // Verificar si el botón clickeado representa una estación
-            bool esEstacionObjetivo = false;
-            for (estacion* estacion : estaciones) {
-                if (fila == estacion->getFila() && columna == estacion->getColumna()) {
-                    //El botón clickeado representa una estación
-                    inicioFila = fila;
-                    inicioColumna = columna;
-                    conectandoEstaciones = true;
-                    rutaEnConstruccion.clear();
-                    rutaEnConstruccion.push_back(make_pair(fila, columna));
-                    esEstacionObjetivo = true;
-                    qDebug() << "Iniciando creación de ruta desde: (" << inicioFila << "," << inicioColumna << ")";
-                    break;
-                }
-            }
-
-            if (!esEstacionObjetivo) {
-                qDebug() << "Error: Debes comenzar la ruta desde una estación.";
-            }
-
-        } else {
-            auto ultimoPunto = rutaEnConstruccion.back();//se usa para verificar si el usuario esta creando bien la ruta y no esta dando saltos
-            int filaUltimoPunto = ultimoPunto.first;//se usa para verificar si el usuario esta creando bien la ruta y no esta dando saltos
-            int columnaUltimoPunto = ultimoPunto.second;//se usa para verificar si el usuario esta creando bien la ruta y no esta dando saltos
-
-            if (esAdyacente(filaUltimoPunto, columnaUltimoPunto, fila, columna)) {
-                QPushButton* botonClickeado = botones[fila][columna];
-                botonClickeado->setText(" --- ");
-                // Agregar el clic a la ruta en construcción
-                rutaEnConstruccion.push_back(make_pair(fila, columna));
-
-                if (fila == inicioFila && columna == inicioColumna) {
-                    // El jugador ha vuelto a hacer clic en la estación de inicio,
-                    // lo cual indica que ha cancelado la ruta actual.
-                    conectandoEstaciones = false;
-                    rutaEnConstruccion.clear();
-                    qDebug() << "Creación de ruta cancelada.";
-                } else {
-                    // Verificar si el botón clickeado representa una estación objetivo
-                    for (estacion* estacion : estaciones) {
-                        if (fila == estacion->getFila() && columna == estacion->getColumna()) {
-                            // El botón clickeado representa una estación objetivo
-                            botonEstacionObjetivoClickeado(fila, columna);
-                            return;
-                        }
-                    }
-                }
-            } else {
-                //si el usuario se confunde y apreta mal, la ruta se borra y puede seguir jugando.El tiempo no se reinicia
-                qDebug() << "Error: Debes seleccionar un botón adyacente al último botón en la ruta.";
-                QMessageBox::critical(this, "Error", "Debes seguir una ruta adyacente. Creación de ruta cancelada.");
-                for (int i = 0; i < rutaEnConstruccion.size(); i++) {
-                    int fila = rutaEnConstruccion[i].first;
-                    int columna = rutaEnConstruccion[i].second;
-                    if(fila == inicioFila && columna == inicioColumna){
-                        QPushButton* botonClickeadoInicio = botones[inicioFila][inicioColumna];
-                        botonClickeadoInicio->setText(encontrarEstacionPorPosicion(inicioFila,inicioColumna)->getTipo());
-                    }else{
-                        botones[fila][columna]->setText(" . ");
-                    }
-                }
-                conectandoEstaciones = false;
-                rutaEnConstruccion.clear();
-                return;
+        // Verificar si el botón clickeado representa una estación
+        bool esEstacionObjetivo = false;
+        for (estacion* estacion : estaciones) {
+            if (fila == estacion->getFila() && columna == estacion->getColumna()) {
+                //El botón clickeado representa una estación
+                inicioFila = fila;
+                inicioColumna = columna;
+                conectandoEstaciones = true;
+                this->rutaEnConstruccion = new ruta;
+                this->rutaEnConstruccion->setEstacionInicio(estacion);
+                esEstacionObjetivo = true;
+                ultimoPuntoFila = fila;
+                ultimoPuntoColumna = columna;
+                qDebug() << "Iniciando creación de ruta desde: (" << inicioFila << "," << inicioColumna << ")";
+                break;
             }
         }
+        if (!esEstacionObjetivo) {
+            qDebug() << "Error: Debes comenzar la ruta desde una estación.";
+        }
+    } else {
+        //verificamos si se oprimio un boton adyecente
+        if (esAdyacente(ultimoPuntoFila, ultimoPuntoColumna, fila, columna)) {
+            // Verificar si el punto es una estación objetivo
+            for (estacion* estacion : estaciones) {
+                if (fila == estacion->getFila() && columna == estacion->getColumna()) {
+                    qDebug() << "Ruta terminada en: (" << fila << "," << columna << ")";
+                    this->rutaEnConstruccion->setEstacionFinal(estacion);
+                    botonEstacionObjetivoClickeado(fila, columna);
+                    return;
+                }
+            }
+            //si no es una estacion objetivo, se guarda en rutaEnContruccion
+            QPushButton* botonClickeado = botones[fila][columna];
+            botonClickeado->setText(" --- ");
+            // Nos fijamos si chocan los caminos, si choca pierde el juego
+            cruceDeCaminos(fila, columna);
+            this->rutaEnConstruccion->camino.push_back(make_pair(fila, columna));
+        }else{
+            // Si el usuario se confunde y aprieta mal, la ruta se borra y puede seguir jugando.
+            QMessageBox::critical(this, "Error", "Debes seguir una ruta adyacente. Creación de ruta cancelada.");
+            for (int i = 0; i < this->rutaEnConstruccion->camino.size(); i++) {
+                int fila = this->rutaEnConstruccion->camino[i].first;
+                int columna = this->rutaEnConstruccion->camino[i].second;
+                if (fila == inicioFila && columna == inicioColumna) {
+                    QPushButton* botonClickeadoInicio = botones[inicioFila][inicioColumna];
+                    botonClickeadoInicio->setText(encontrarEstacionPorPosicion(inicioFila, inicioColumna)->getTipo());
+                } else {
+                    botones[fila][columna]->setText(" . ");
+                }
+            }
+            conectandoEstaciones = false;
+            this->rutaEnConstruccion->camino.clear();
+        }
+        // Actualiza las variables del último punto oprimido
+        ultimoPuntoFila = fila;
+        ultimoPuntoColumna = columna;
+    }
 
 }
 void Mapa::botonEstacionObjetivoClickeado(int fila, int columna)
@@ -120,40 +111,22 @@ void Mapa::botonEstacionObjetivoClickeado(int fila, int columna)
         estacion* estacionOrigen = encontrarEstacionPorPosicion(inicioFila, inicioColumna);
         estacion* estacionDestino = encontrarEstacionPorPosicion(fila, columna);
 
-//         Verificar restricciones según el tipo de estación de origen
-//        if (!verificarRestriccionesEstacion(estacionOrigen, estacionDestino, rutaEnConstruccion)) {
-//            qDebug() << "Error: Fallo estacion .";
-//            conectandoEstaciones = false;
-//            rutaEnConstruccion.clear();
-//            return;
-//        }
-
-
-//        PARA QUE NO SE ATRAVIESEN LAS RUTAS
-//        for (const auto& punto : rutaEnConstruccion) {
-//            if (estaEnRutaEstablecida(punto.first,punto.second)) {
-//                // El botón clickeado representa una posición que coincide con una ruta válida
-//                qDebug() << "Error: Este botón representa una ruta establecida.";
-//                QMessageBox::critical(this, "Error", "Este botón representa una ruta establecida. Creación de ruta cancelada.");
-//                conectandoEstaciones = false;
-//                rutaEnConstruccion.clear();
-//                return;
-//            };
-//        }
-
         // Incrementar conexiones de la estación de origen y estacion destino
         estacionOrigen->incrementarConexiones();
         estacionDestino->incrementarConexiones();
 
-
-        // Crear un objeto de la clase Ruta y almacenarlo en una colección de rutas válidas
-        ruta* nuevaRuta = new ruta(estacionOrigen, estacionDestino, rutaEnConstruccion);
+        qDebug() << "Contenido de ruta en construcción:";
+        for (const auto& punto : rutaEnConstruccion->camino) {
+            qDebug() << "(" << punto.first << ", " << punto.second << ")";
+        }
+        // Crear una copia de la ruta en construcción
+        ruta* nuevaRuta = new ruta(*rutaEnConstruccion);
         rutasValidas.push_back(nuevaRuta);
 
 
-        for (int i = 0; i < rutaEnConstruccion.size(); i++) {
-            int fila = rutaEnConstruccion[i].first;
-            int columna = rutaEnConstruccion[i].second;
+        for (int i = 0; i < this->rutaEnConstruccion->camino.size(); i++) {
+            int fila = this->rutaEnConstruccion->camino[i].first;
+            int columna = this->rutaEnConstruccion->camino[i].second;
             botones[fila][columna]->setText("Ruta");
         }
 
@@ -164,11 +137,11 @@ void Mapa::botonEstacionObjetivoClickeado(int fila, int columna)
         qDebug() << "Ruta conectada correctamente.";
         agregarEstacionAleatoria();
         agregarEstacionAleatoria();
-//        this->cronometro->reiniciar();//reinicio timer
+        //this->cronometro->reiniciar();//reinicio timer
     } else {
         qDebug() << "Error: La ruta no es válida.";
     }
-    rutaEnConstruccion.clear(); // Limpia la ruta en construcción para una nueva creación
+    this->rutaEnConstruccion->camino.clear(); // Limpia la ruta en construcción para una nueva creación
     emit botonEstacionObjetivoClickeadoSignal();
 }
 
@@ -182,6 +155,17 @@ estacion* Mapa::encontrarEstacionPorPosicion(int fila, int columna)
     throw runtime_error("Estación no encontrada para la posición dada.");
 }
 
+void Mapa::cruceDeCaminos(int fila, int columna) {
+    for (ruta* rutaValida : rutasValidas) {
+        // Verificar si (fila, columna) está en la ruta
+        for (pair<int, int>& punto : rutaValida->camino) {
+            if (punto.first == fila && punto.second == columna) {
+                QMessageBox::critical(this, "Game Over", "¡Trataste de usar una ruta ya usada!");
+                QCoreApplication::quit();
+            }
+        }
+    }
+}
 
 
 void Mapa::agregarEstacionAleatoria() {

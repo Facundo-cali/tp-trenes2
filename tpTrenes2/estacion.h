@@ -7,13 +7,13 @@ using namespace std;
 class estacion
 {
 private:
-    int fila;
-    int columna;
     int cantConexiones = 0;
 protected:
     char* tipo;
     bool colapsada = false;
 public:
+    int fila;
+    int columna;
     estacion();
     estacion(int fila, int columna);
 
