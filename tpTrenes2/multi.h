@@ -10,7 +10,7 @@ private:
 public:
     multi();
     multi(int fila, int columna);
-    void estacionColapsada();
+    bool estacionColapsada();
 };
 
 #endif // MULTI_H

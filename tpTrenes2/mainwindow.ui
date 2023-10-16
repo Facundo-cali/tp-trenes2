@@ -71,7 +71,7 @@
      </font>
     </property>
     <property name="text">
-     <string>Ahora podes comenzar a crear tu ruta. Para hacerlo, selecciona una estación y pulsa los botones correspondientes para conectar las estaciones. Si lo hiciste correctamente, el temporizador se reiniciará y aparecerán más estaciones.Recuerda que las rutas siempre deben comenzar desde una estacion</string>
+     <string>Ahora podes comenzar a crear tu ruta. Para hacerlo, selecciona una estación y pulsa los botones correspondientes para conectar las estaciones. Si lo hiciste correctamente, el temporizador se reiniciará y aparecerán más estaciones.Recuerda que las rutas siempre deben comenzar desde una estación.</string>
     </property>
     <property name="wordWrap">
      <bool>true</bool>

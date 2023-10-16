@@ -8,6 +8,6 @@ class normal : public estacion
 public:
     normal();
     normal(int fila, int columna);
-    void estacionColapsada();
+    bool estacionColapsada();
 };
 #endif // NORMAL_H

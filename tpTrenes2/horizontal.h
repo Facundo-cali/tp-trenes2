@@ -8,7 +8,7 @@ class horizontal :public estacion
 public:
     horizontal();
     horizontal(int fila, int columna);
-    void estacionColapsada();
+    bool estacionColapsada();
 };
 
 #endif // HORIZONTAL_H

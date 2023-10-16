@@ -77,10 +77,13 @@ void Mapa::botonClickeado(int fila, int columna)
             QPushButton* botonClickeado = botones[fila][columna];
             botonClickeado->setText(" --- ");
             // Nos fijamos si chocan los caminos, si choca pierde el juego
-            cruceDeCaminos(fila, columna);
+            if(cruceDeCaminos(fila, columna)){
+                QMessageBox::critical(this, "Game Over", "¡Trataste de usar una ruta ya usada!");
+                QCoreApplication::quit();
+            }
             this->rutaEnConstruccion->camino.push_back(make_pair(fila, columna));
         }else{
-            // Si el usuario se confunde y aprieta mal, la ruta se borra y puede seguir jugando.
+            //Si el usuario se confunde y aprieta mal, la ruta se borra y puede seguir jugando.
             QMessageBox::critical(this, "Error", "Debes seguir una ruta adyacente. Creación de ruta cancelada.");
             for (int i = 0; i < this->rutaEnConstruccion->camino.size(); i++) {
                 int fila = this->rutaEnConstruccion->camino[i].first;
@@ -107,37 +110,39 @@ void Mapa::botonEstacionObjetivoClickeado(int fila, int columna)
         // Finalizar la creación de ruta
         conectandoEstaciones = false;
 
+        // Obtén el primer punto y el último punto de la ruta en construcción
+        pair<int, int> puntoConexionUno = rutaEnConstruccion->camino.front();
+        pair<int, int> puntoConexionDos = rutaEnConstruccion->camino.back();
+
         // Obtener las estaciones de origen y destino
         estacion* estacionOrigen = encontrarEstacionPorPosicion(inicioFila, inicioColumna);
         estacion* estacionDestino = encontrarEstacionPorPosicion(fila, columna);
 
-        // Incrementar conexiones de la estación de origen y estacion destino
-        estacionOrigen->incrementarConexiones();
-        estacionDestino->incrementarConexiones();
+        // Establece los puntos de entrada y salida en las estaciones
+        estacionOrigen->agregarPuntoEntradaSalida(puntoConexionUno);
+        estacionDestino->agregarPuntoEntradaSalida(puntoConexionDos);
 
-        qDebug() << "Contenido de ruta en construcción:";
-        for (const auto& punto : rutaEnConstruccion->camino) {
-            qDebug() << "(" << punto.first << ", " << punto.second << ")";
+        // Realizar comprobación y mostrar errores si corresponde
+        if (estacionOrigen->estacionColapsada() || estacionDestino->estacionColapsada()) {
+            QMessageBox::critical(this, "Game Over", "¡Has perdido el juego por no seguir las reglas!");
+            QCoreApplication::quit();
         }
-        // Crear una copia de la ruta en construcción
+
+        // Crear una copia de la ruta en construcción y la establece como ruta valida
         ruta* nuevaRuta = new ruta(*rutaEnConstruccion);
         rutasValidas.push_back(nuevaRuta);
 
 
+        // Restaurar los textos de los botones
         for (int i = 0; i < this->rutaEnConstruccion->camino.size(); i++) {
             int fila = this->rutaEnConstruccion->camino[i].first;
             int columna = this->rutaEnConstruccion->camino[i].second;
             botones[fila][columna]->setText("Ruta");
         }
 
-        // Restaurar los textos de los botones de las estaciones
-        this->botones[fila][columna]->setText(estacionDestino->getTipo());
-        this->botones[inicioFila][inicioColumna]->setText(estacionOrigen->getTipo());
-
         qDebug() << "Ruta conectada correctamente.";
         agregarEstacionAleatoria();
         agregarEstacionAleatoria();
-        //this->cronometro->reiniciar();//reinicio timer
     } else {
         qDebug() << "Error: La ruta no es válida.";
     }
@@ -152,19 +157,17 @@ estacion* Mapa::encontrarEstacionPorPosicion(int fila, int columna)
             return estacion;
         }
     }
-    throw runtime_error("Estación no encontrada para la posición dada.");
 }
 
-void Mapa::cruceDeCaminos(int fila, int columna) {
+bool Mapa::cruceDeCaminos(int fila, int columna) {
     for (ruta* rutaValida : rutasValidas) {
-        // Verificar si (fila, columna) está en la ruta
         for (pair<int, int>& punto : rutaValida->camino) {
             if (punto.first == fila && punto.second == columna) {
-                QMessageBox::critical(this, "Game Over", "¡Trataste de usar una ruta ya usada!");
-                QCoreApplication::quit();
+                return true;
             }
         }
     }
+    return false;
 }
 
 
@@ -177,7 +180,7 @@ void Mapa::agregarEstacionAleatoria() {
     do {
         filaAleatoria = rand() % cant;
         columnaAleatoria = rand() % cant;
-        posicionOcupada = hayEstacionEnPosicion(filaAleatoria, columnaAleatoria) /*|| estaEnRutaEstablecida(filaAleatoria, columnaAleatoria)*/;
+        posicionOcupada = hayEstacionEnPosicion(filaAleatoria, columnaAleatoria) || cruceDeCaminos(filaAleatoria, columnaAleatoria);
     } while (posicionOcupada);
 
     // Generar un número aleatorio para elegir el tipo de estación (0, 1, 2, 3)
@@ -207,7 +210,6 @@ void Mapa::agregarEstacionAleatoria() {
 
     //cambia el texto del boton, mostrando el nombre de la estacion creada
     botones[filaAleatoria][columnaAleatoria]->setText(QString::fromStdString(estacionAleatoria->getTipo()));
-
     estaciones.push_back(estacionAleatoria);
 }
 
@@ -220,8 +222,6 @@ bool Mapa::hayEstacionEnPosicion(int fila, int columna) {
     return false;
 }
 
-
-//Verifica si el usuario crea las rutas de manera correcta.
 bool Mapa::esAdyacente(int fila1, int columna1, int fila2, int columna2)
 {
     int distanciaFila = abs(fila1 - fila2);

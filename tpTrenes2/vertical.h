@@ -8,7 +8,7 @@ class vertical : public estacion
 public:
     vertical();
     vertical(int fila, int columna);
-    void estacionColapsada();
+    bool estacionColapsada();
 };
 
 

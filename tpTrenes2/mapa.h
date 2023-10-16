@@ -36,7 +36,7 @@ public:
     bool esAdyacente(int fila1, int columna1, int fila2, int columna2);
     void botonEstacionObjetivoClickeado(int fila, int columna);
     estacion *encontrarEstacionPorPosicion(int fila, int columna);
-    void cruceDeCaminos(int fila, int columna);
+    bool cruceDeCaminos(int fila, int columna);
 
 signals:
     void botonEstacionObjetivoClickeadoSignal();
