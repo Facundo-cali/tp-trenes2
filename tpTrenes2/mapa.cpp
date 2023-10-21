@@ -180,7 +180,7 @@ void Mapa::agregarEstacionAleatoria() {
     do {
         filaAleatoria = rand() % cant;
         columnaAleatoria = rand() % cant;
-        posicionOcupada = hayEstacionEnPosicion(filaAleatoria, columnaAleatoria) || cruceDeCaminos(filaAleatoria, columnaAleatoria);
+        posicionOcupada = hayEstacionEnPosicion(filaAleatoria, columnaAleatoria) || cruceDeCaminos(filaAleatoria, columnaAleatoria) || !esAdyacente(filaAleatoria, columnaAleatoria);
     } while (posicionOcupada);
 
     // Generar un número aleatorio para elegir el tipo de estación (0, 1, 2, 3)
@@ -222,6 +222,7 @@ bool Mapa::hayEstacionEnPosicion(int fila, int columna) {
     return false;
 }
 
+//verifica si el ultimo boton oprimido por el usuario es adyacente al anterior que oprimio
 bool Mapa::esAdyacente(int fila1, int columna1, int fila2, int columna2)
 {
     int distanciaFila = abs(fila1 - fila2);
@@ -229,7 +230,27 @@ bool Mapa::esAdyacente(int fila1, int columna1, int fila2, int columna2)
     return (distanciaFila == 1 && distanciaColumna == 0) || (distanciaFila == 0 && distanciaColumna == 1);
 }
 
+//verificar si una posición dada del mapa es adyacente a la posición actual de alguna estación existente (sobrecargada)
+bool Mapa::esAdyacente(int fila, int columna) {
+    // Define un valor de separación mínimo entre estaciones
+    int separacionMinima = 2;
+    // Itera sobre todas las estaciones existentes
+    for (estacion* est : estaciones) {
+        int filaEstacion = est->getFila();
+        int columnaEstacion = est->getColumna();
 
+        // distancia entre la nueva posición y la estación actual
+        int distanciaFila = abs(filaEstacion - fila);
+        int distanciaColumna = abs(columnaEstacion - columna);
+
+        // Comprueba si la distancia cumple con la separación mínima
+        if (distanciaFila < separacionMinima && distanciaColumna < separacionMinima) {
+            return false;
+        }
+    }
+
+    return true;
+}
 
 
 
